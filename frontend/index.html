@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GeoAI Frontend</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link
+    href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css"
+    rel="stylesheet"
+  />
+</head>
+<body>
+  <div id="app">
+    <div id="map"></div>
+    <div id="control">
+      <form id="chat-form">
+        <input id="query" type="text" placeholder="Ask the map..." />
+        <button type="submit">Send</button>
+      </form>
+      <div id="log"></div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js"></script>
+  <script src="app.js"></script>
+  <script>
+    window.__BACKEND_BASE__ = 'http://localhost:8082';
+  </script>
+</body>
+</html>
+
+

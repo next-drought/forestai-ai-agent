@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any
 
@@ -8,6 +9,15 @@ app = FastAPI(
     title="GeoAI Google Agent",
     description="A web backend for a geospatial agent using Google ADK and litellm.",
     version="0.1.0",
+)
+
+# CORS for local frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Initialize the agent globally so it's created only once.

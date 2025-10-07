@@ -164,4 +164,28 @@ curl -sS -X POST http://localhost:8089/chat \
 - When using Litellm with Ollama, set `api_base` via `OLLAMA_HOST`.
 - If you do use Google ADK, import under the `google.adk` namespace and verify the module exists in the installed wheel.
 
+### Using Vertex AI via Litellm
+Set `GEOAI_MODEL` to a Vertex model and provide credentials via environment variables supported by Litellm:
+
+```bash
+# Example: Gemini 1.5 Flash on Vertex AI
+export GEOAI_MODEL="vertex_ai/gemini-1.5-flash"
+export VERTEXAI_PROJECT="your-gcp-project-id"
+export VERTEXAI_LOCATION="us-central1"
+# Service account key file path (mounted into the container)
+export GOOGLE_APPLICATION_CREDENTIALS="/app/keys/sa.json"
+
+docker run -d -p 8082:8080 \
+  -e GEOAI_MODEL="$GEOAI_MODEL" \
+  -e VERTEXAI_PROJECT="$VERTEXAI_PROJECT" \
+  -e VERTEXAI_LOCATION="$VERTEXAI_LOCATION" \
+  -e GOOGLE_APPLICATION_CREDENTIALS="$GOOGLE_APPLICATION_CREDENTIALS" \
+  -v /abs/path/to/sa.json:/app/keys/sa.json:ro \
+  --name agentgoogle-vertex my-agent
+```
+
+Notes:
+- The code auto-detects providers: it sets `api_base` only for `ollama/*` models. For `vertex_ai/*`, Litellm reads the above env vars.
+- Litellm’s Vertex provider also works with default ADC if the container is running on GCE/GKE with appropriate scopes/Workload Identity.
+
 

@@ -10,6 +10,24 @@ from tools import MapTools
 MODEL_NAME = os.environ.get("GEOAI_MODEL", "ollama/llama3.1")
 API_BASE = os.environ.get("OLLAMA_HOST")
 
+# Vertex AI support via litellm:
+# Set env vars when using a Vertex model (e.g., GEOAI_MODEL=vertex_ai/gemini-1.5-flash)
+#   - VERTEXAI_PROJECT: GCP Project ID
+#   - VERTEXAI_LOCATION: e.g., us-central1
+#   - GOOGLE_APPLICATION_CREDENTIALS: path to service account json
+def _get_litellm_provider_kwargs(model_name: str) -> Dict[str, Any]:
+    """Provider-specific kwargs for litellm.completion.
+
+    - Ollama: set api_base from OLLAMA_HOST if provided
+    - Vertex AI: rely on env vars; no kwargs required
+    """
+    provider_kwargs: Dict[str, Any] = {}
+    if model_name.startswith("ollama/"):
+        if API_BASE:
+            provider_kwargs["api_base"] = API_BASE
+    # For vertex_ai/* models, litellm uses env vars; nothing to add here
+    return provider_kwargs
+
 
 class GeoAgent:
     """A geospatial agent that can control a map via function calling."""
@@ -184,9 +202,7 @@ class GeoAgent:
         messages.append({"role": "user", "content": query})
 
         try:
-            kwargs: Dict[str, Any] = {}
-            if API_BASE:
-                kwargs["api_base"] = API_BASE
+            kwargs = _get_litellm_provider_kwargs(MODEL_NAME)
 
             response = completion(
                 model=MODEL_NAME,

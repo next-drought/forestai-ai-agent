@@ -1,0 +1,8 @@
+# Minimal deps for the isolated agentgoogle service
+google-adk
+python-dotenv
+httpx
+google-auth
+litellm
+fastapi
+uvicorn[standard]

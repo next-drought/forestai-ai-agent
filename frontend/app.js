@@ -5,16 +5,32 @@
   const BASEMAPS = {
     liberty: 'https://demotiles.maplibre.org/style.json',
     streets: 'https://demotiles.maplibre.org/style.json',
-    satellite: 'https://demotiles.maplibre.org/style.json'
+    satellite: 'https://demotiles.maplibre.org/style.json',
+    // Placeholder Google imagery style JSON; replace with a real provider style if available
+    google: 'https://tiles.stadiamaps.com/styles/alidade_satellite.json'
   };
 
   const map = new maplibregl.Map({
     container: 'map',
-    style: BASEMAPS.liberty,
+    style: BASEMAPS.google,
     center: [0, 20],
     zoom: 2,
     pitch: 0,
-    projection: 'mercator'
+    projection: 'globe'
+  });
+
+  // Ensure globe projection takes effect after style load and add atmosphere for visual cue
+  map.once('load', () => {
+    try {
+      map.setProjection('globe');
+      // Optional: slight tilt and lower zoom to better perceive the globe
+      if (map.getZoom() > 1.5) map.setZoom(1.2);
+      if (map.getPitch() < 10) map.setPitch(20);
+      // Add default fog for atmospheric effect (supported in MapLibre GL v3)
+      if (typeof map.setFog === 'function') {
+        map.setFog({});
+      }
+    } catch (e) {}
   });
 
   const markers = [];
@@ -80,6 +96,9 @@
           const { name } = payload;
           const styleUrl = (name && BASEMAPS[name]) || BASEMAPS.liberty;
           map.setStyle(styleUrl);
+          // Re-apply globe projection after style swap if already in globe
+          const setProj = () => { try { map.setProjection('globe'); } catch (e) {} };
+          if (map.isStyleLoaded()) setProj(); else map.once('styledata', setProj);
           break;
         }
         case 'add_vector': {
@@ -196,6 +215,18 @@
   const form = document.getElementById('chat-form');
   const input = document.getElementById('query');
   const history = [];
+
+  // Basemap selector wiring
+  const basemapSelect = document.getElementById('basemap');
+  if (basemapSelect) {
+    basemapSelect.addEventListener('change', () => {
+      const key = basemapSelect.value;
+      const styleUrl = BASEMAPS[key] || BASEMAPS.liberty;
+      map.setStyle(styleUrl);
+      const setProj = () => { try { map.setProjection('globe'); } catch (e) {} };
+      if (map.isStyleLoaded()) setProj(); else map.once('styledata', setProj);
+    });
+  }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
